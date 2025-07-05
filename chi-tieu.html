@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghi Chi Tiêu - Kết nối Google Sheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .form-container {
+            padding: 30px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .amount-input {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .auto-info {
+            background: #f0f8ff;
+            border: 1px solid #d1ecf1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .auto-info strong {
+            color: #0c5460;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .setup-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .setup-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .setup-section small {
+            color: #666;
+            font-size: 12px;
+            display: block;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-amount-btn {
+            background: #e9ecef;
+            border: 2px solid #dee2e6;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-amount-btn:hover, .quick-amount-btn.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background: #4CAF50;
+        }
+
+        .status-disconnected {
+            background: #f44336;
+        }
+
+        .tutorial-section {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .tutorial-section h4 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        .tutorial-section ol {
+            margin-left: 20px;
+        }
+
+        .tutorial-section li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .form-container {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Ghi Chi Tiêu</h1>
+            <p>Kết nối trực tiếp với Google Sheet</p>
+        </div>
+
+        <div class="form-container">
+            <div class="setup-section" id="setupSection">
+                <h3>🔧 Cài đặt kết nối Google Sheet</h3>
+                
+                <div class="tutorial-section">
+                    <h4>📋 Hướng dẫn cài đặt:</h4>
+                    <ol>
+                        <li><strong>Tạo Google Apps Script:</strong> Truy cập script.google.com</li>
+                        <li><strong>Paste code backend</strong> đã cung cấp</li>
+                        <li><strong>Thay SHEET_ID</strong> bằng ID Google Sheet của bạn</li>
+                        <li><strong>Deploy as Web App</strong> với quyền "Anyone"</li>
+                        <li><strong>Copy URL</strong> và paste vào ô bên dưới</li>
+                    </ol>
+                </div>
+
+                <div class="form-group">
+                    <label for="scriptUrl">🔗 URL Google Apps Script:</label>
+                    <input type="url" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+                    <small>
+                        Paste URL của Web App sau khi deploy Google Apps Script. 
+                        URL phải kết thúc bằng "/exec"
+                    </small>
+                </div>
+
+                <button type="button" onclick="testConnection()" class="submit-btn">
+                    🔄 Kiểm tra kết nối
+                </button>
+
+                <div style="margin-top: 15px;">
+                    <button type="button" onclick="saveSettings()" class="submit-btn" id="saveSettingsBtn" disabled>
+                        💾 Lưu cài đặt
+                    </button>
+                </div>
+            </div>
+
+            <div id="mainForm" style="display: none;">
+                <div class="auto-info">
+                    <span class="status-indicator status-connected"></span>
+                    <strong>Kết nối thành công!</strong><br>
+                    Ngày: <span id="currentDay"></span> | 
+                    Tháng: <span id="currentMonth"></span> | 
+                    Khoản: Chi
+                </div>
+
+                <div class="success-message" id="successMessage">
+                    ✅ Đã thêm thành công vào Google Sheet!
+                </div>
+
+                <div class="error-message" id="errorMessage">
+                    ❌ Có lỗi xảy ra. Vui lòng thử lại.
+                </div>
+
+                <form id="expenseForm">
+                    <div class="form-group">
+                        <label for="amount">💵 Chi Tiêu (VNĐ)</label>
+                        <div class="quick-amounts">
+                            <button type="button" class="quick-amount-btn" onclick="setAmount(50000)">50k</button>
+                            <button type="button" class="quick-amount-btn" onclick="setAmount(100000)">100k</button>
+                            <button type="button" class="quick-amount-btn" onclick="setAmount(200000)">200k</button>
+                            <button type="button" class="quick-amount-btn" onclick="setAmount(500000)">500k</button>
+                            <button type="button" class="quick-amount-btn" onclick="setAmount(1000000)">1M</button>
+                            <button type="button" class="quick-amount-btn" onclick="clearAmount()">Xóa</button>
+                        </div>
+                        <input type="number" id="amount" class="amount-input" placeholder="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="note">📝 Ghi chú</label>
+                        <textarea id="note" placeholder="Ví dụ: Ăn trưa, xăng xe, mua sắm..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        💾 Thêm vào Google Sheet
+                    </button>
+                </form>
+
+                <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #666;">
+                    <button type="button" onclick="showSettings()" style="background: none; border: none; color: #4CAF50; text-decoration: underline; cursor: pointer;">
+                        ⚙️ Thay đổi cài đặt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Biến lưu trữ cài đặt
+        let scriptUrl = '';
+        let isConnected = false;
+
+        // Khởi tạo khi trang load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            checkSavedSettings();
+        });
+
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('currentDay').textContent = now.getDate();
+            document.getElementById('currentMonth').textContent = now.getMonth() + 1;
+        }
+
+        function checkSavedSettings() {
+            const savedUrl = getSavedScriptUrl();
+            if (savedUrl) {
+                document.getElementById('scriptUrl').value = savedUrl;
+                scriptUrl = savedUrl;
+                // Auto test connection if URL exists
+                testConnection();
+            }
+        }
+
+        async function testConnection() {
+            const urlInput = document.getElementById('scriptUrl');
+            const testUrl = urlInput.value.trim();
+            
+            if (!testUrl) {
+                showMessage('error', 'Vui lòng nhập URL Google Apps Script');
+                return;
+            }
+
+            if (!testUrl.includes('script.google.com') || !testUrl.endsWith('/exec')) {
+                showMessage('error', 'URL không hợp lệ. URL phải từ script.google.com và kết thúc bằng /exec');
+                return;
+            }
+
+            try {
+                showMessage('info', '🔄 Đang kiểm tra kết nối...');
+                
+                // Test với dữ liệu thử
+                const testData = {
+                    amount: 1000,
+                    note: 'Test kết nối từ tool'
+                };
+
+                const response = await fetch(testUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    isConnected = true;
+                    scriptUrl = testUrl;
+                    document.getElementById('saveSettingsBtn').disabled = false;
+                    showMessage('success', '✅ Kết nối thành công! Đã thêm 1 dòng test vào Google Sheet.');
+                } else {
+                    showMessage('error', '❌ Lỗi: ' + result.message);
+                }
+                
+            } catch (error) {
+                console.error('Connection test error:', error);
+                showMessage('error', '❌ Không thể kết nối. Kiểm tra lại URL và quyền truy cập.');
+            }
+        }
+
+        function saveSettings() {
+            if (!isConnected) {
+                showMessage('error', 'Vui lòng kiểm tra kết nối trước khi lưu');
+                return;
+            }
+
+            // Lưu URL
+            setSavedScriptUrl(scriptUrl);
+            
+            // Chuyển sang form chính
+            document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('mainForm').style.display = 'block';
+            
+            showMessage('success', '💾 Đã lưu cài đặt thành công!');
+        }
+
+        function showSettings() {
+            document.getElementById('setupSection').style.display = 'block';
+            document.getElementById('mainForm').style.display = 'none';
+        }
+
+        function setAmount(value) {
+            document.getElementById('amount').value = value;
+            document.querySelectorAll('.quick-amount-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function clearAmount() {
+            document.getElementById('amount').value = '';
+            document.querySelectorAll('.quick-amount-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        document.getElementById('expenseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitExpense();
+        });
+
+        async function submitExpense() {
+            const submitBtn = document.getElementById('submitBtn');
+            const amount = document.getElementById('amount').value;
+            const note = document.getElementById('note').value;
+
+            if (!amount || !note) {
+                showMessage('error', 'Vui lòng điền đầy đủ thông tin');
+                return;
+            }
+
+            if (!scriptUrl) {
+                showMessage('error', 'Chưa cài đặt kết nối Google Sheet');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Đang thêm...';
+
+            try {
+                const data = {
+                    amount: parseInt(amount),
+                    note: note
+                };
+
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('success', '✅ Đã thêm thành công vào Google Sheet!');
+                    
+                    // Reset form
+                    document.getElementById('amount').value = '';
+                    document.getElementById('note').value = '';
+                    document.querySelectorAll('.quick-amount-btn').forEach(btn => btn.classList.remove('active'));
+                    
+                    // Focus vào amount input để nhập tiếp
+                    setTimeout(() => {
+                        document.getElementById('amount').focus();
+                    }, 1500);
+                    
+                } else {
+                    showMessage('error', '❌ Lỗi: ' + result.message);
+                }
+                
+            } catch (error) {
+                console.error('Submit error:', error);
+                showMessage('error', '❌ Có lỗi xảy ra khi gửi dữ liệu');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Thêm vào Google Sheet';
+            }
+        }
+
+        function showMessage(type, message) {
+            const successEl = document.getElementById('successMessage');
+            const errorEl = document.getElementById('errorMessage');
+            
+            // Ẩn tất cả message trước
+            successEl.style.display = 'none';
+            errorEl.style.display = 'none';
+            
+            if (type === 'success') {
+                successEl.innerHTML = message;
+                successEl.style.display = 'block';
+                setTimeout(() => successEl.style.display = 'none', 4000);
+            } else if (type === 'error') {
+                errorEl.innerHTML = message;
+                errorEl.style.display = 'block';
+                setTimeout(() => errorEl.style.display = 'none', 6000);
+            } else if (type === 'info') {
+                // Sử dụng success element cho thông báo info
+                successEl.innerHTML = message;
+                successEl.style.display = 'block';
+                successEl.style.background = '#d1ecf1';
+                successEl.style.color = '#0c5460';
+                setTimeout(() => {
+                    successEl.style.display = 'none';
+                    successEl.style.background = '#d4edda';
+                    successEl.style.color = '#155724';
+                }, 3000);
+            }
+        }
+
+        // Storage functions - sử dụng JS variables
+        let savedScriptUrl = '';
+
+        function setSavedScriptUrl(url) {
+            savedScriptUrl = url;
+        }
+
+        function getSavedScriptUrl() {
+            return savedScriptUrl;
+        }
+
+        // Auto-focus amount input when main form is shown
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.target.id === 'mainForm' && mutation.target.style.display !== 'none') {
+                    setTimeout(() => {
+                        document.getElementById('amount').focus();
+                    }, 100);
+                }
+            });
+        });
+
+        if (document.getElementById('mainForm')) {
+            observer.observe(document.getElementById('mainForm'), {
+                attributes: true,
+                attributeFilter: ['style']
+            });
+        }
+    </script>
+</body>
+</html>
